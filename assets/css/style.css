@@ -1,0 +1,18 @@
+body{
+    background-image: url("../images/train.jpg");
+    background-size: cover; 
+
+}
+.label1{
+    background-color: aquamarine;
+    height: 200px;
+    margin: auto;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 60px;
+}
+
+.trainName{
+    border: 5px green solid;
+    margin: 5px;
+    padding: 5px;
+}
