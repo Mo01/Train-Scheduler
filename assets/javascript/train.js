@@ -12,6 +12,7 @@ var config = {
 };
 firebase.initializeApp(config);
 var database = firebase.database();
+
 // User input
 $("#submit").on("click", function (event) {
   event.preventDefault();
@@ -40,30 +41,34 @@ $("#submit").on("click", function (event) {
 
 database.ref().on("child_added", function (childSnapshot) {
   var id = childSnapshot.key;
+  
+  // firstTrain time as string
+  var firstTrain = childSnapshot.val().firstTrain;
+  //convert firstTrain string to HH:MM and object
+  var start = moment(firstTrain, "HH:mm").toObject();
+  // from the object get total minutes
+  var startMin = start.hours * 60 + start.minutes;
+  // Frequency as string
+  var frequency = childSnapshot.val().frequency;
   // Current time
   var now = moment().toObject();
-  var firstTrain = childSnapshot.val().firstTrain;
-  var start = moment(firstTrain, "HH:mm").toObject();
-  var startMin = start.hours * 60 + start.minutes;
-  var frequency = childSnapshot.val().frequency;
-  console.log(startMin);
+  // from the curentTime object get the total minutes
   var nowMin = now.hours * 60 + now.minutes;
-  console.log(nowMin);
+  // (curent time - start time) / frequency
   var nextStop = (nowMin - startMin) / frequency;
+  // frequency * (nextStop as integer) + startTime
   var nextStopMin = frequency * Math.ceil(nextStop) + startMin;
-  console.log(nextStop, nextStopMin);
   var minAway = nextStopMin - nowMin;
-  console.log(minAway);
-
+  // ArraivelTime startfrom midnight then added the nextStopMin in minutes
   var nextArraival = moment().startOf('day').add(nextStopMin, "minutes").format("HH:mm");
 
-
+// To display in HTML
   $("table > tbody").append('<tr id="'+id +'"><td><a href="javascript:deleteMe(\''+ id +'\')">X</a></td><td>'+ childSnapshot.val().name + "</td><td>" + childSnapshot.val().destination + "</td><td>" + frequency + "</td><td>" + firstTrain + "</td><td>" + nextArraival + "</td><td>" + minAway + "</td></tr>")
 
 
 
 });
-
+//Delete function
 function deleteMe(id) {
   database.ref().child(id).remove();
   $("#"+ id).remove();
