@@ -39,6 +39,8 @@ $("#submit").on("click", function (event) {
 
 });
 
+setInterval(function(){
+  $("table > tbody").empty();
 database.ref().on("child_added", function (childSnapshot) {
   var id = childSnapshot.key;
   
@@ -63,11 +65,15 @@ database.ref().on("child_added", function (childSnapshot) {
   var nextArraival = moment().startOf('day').add(nextStopMin, "minutes").format("HH:mm");
 
 // To display in HTML
-  $("table > tbody").append('<tr id="'+id +'"><td><a href="javascript:deleteMe(\''+ id +'\')">X</a></td><td>'+ childSnapshot.val().name + "</td><td>" + childSnapshot.val().destination + "</td><td>" + frequency + "</td><td>" + firstTrain + "</td><td>" + nextArraival + "</td><td>" + minAway + "</td></tr>")
+$("table > tbody").append('<tr id="'+id +'"><td><a href="javascript:deleteMe(\''+ id +'\')">X</a></td><td>'+ childSnapshot.val().name + "</td><td>" + childSnapshot.val().destination + "</td><td>" + frequency + "</td><td>" + firstTrain + "</td><td>" + nextArraival + "</td><td>" + minAway + "</td></tr>")
+
+  
+
+  
 
 
 
-});
+}); },1000);
 //Delete function
 function deleteMe(id) {
   database.ref().child(id).remove();
