@@ -39,19 +39,11 @@ $("#submit").on("click", function (event) {
 
 });
 
-setInterval(function(){
-  $("table > tbody").empty();
-database.ref().on("child_added", function (childSnapshot) {
-  var id = childSnapshot.key;
-  
-  // firstTrain time as string
-  var firstTrain = childSnapshot.val().firstTrain;
+function calcNextArrival(frequency, startTime) {  
   //convert firstTrain string to HH:MM and object
-  var start = moment(firstTrain, "HH:mm").toObject();
+  var start = moment(startTime, "HH:mm").toObject();
   // from the object get total minutes
   var startMin = start.hours * 60 + start.minutes;
-  // Frequency as string
-  var frequency = childSnapshot.val().frequency;
   // Current time
   var now = moment().toObject();
   // from the curentTime object get the total minutes
@@ -62,18 +54,25 @@ database.ref().on("child_added", function (childSnapshot) {
   var nextStopMin = frequency * Math.ceil(nextStop) + startMin;
   var minAway = nextStopMin - nowMin;
   // ArraivelTime startfrom midnight then added the nextStopMin in minutes
-  var nextArraival = moment().startOf('day').add(nextStopMin, "minutes").format("HH:mm");
+  var nextArrival = moment().startOf('day').add(nextStopMin, "minutes").format("HH:mm");
+  return [nextArrival, minAway];
+};
 
+database.ref().on("child_added", function (childSnapshot) {
+  var id = childSnapshot.key;
+  
+  setInterval(function(){
+    var result = calcNextArrival(childSnapshot.val().frequency, childSnapshot.val().firstTrain); 
+    $('#' + id + ' > .next-arrival').text(result[0]);
+    $('#' + id + ' > .min-away').text(result[1]);
+  }, 1000);
+  var result = calcNextArrival(childSnapshot.val().frequency, childSnapshot.val().firstTrain);
 // To display in HTML
-$("table > tbody").append('<tr id="'+id +'"><td><a href="javascript:deleteMe(\''+ id +'\')">X</a></td><td>'+ childSnapshot.val().name + "</td><td>" + childSnapshot.val().destination + "</td><td>" + frequency + "</td><td>" + firstTrain + "</td><td>" + nextArraival + "</td><td>" + minAway + "</td></tr>")
+$("table > tbody").append('<tr id="'+id +'"><td><a href="javascript:deleteMe(\''+ id +'\')">X</a></td><td>'+ childSnapshot.val().name + "</td><td>" + childSnapshot.val().destination + "</td><td>" + childSnapshot.val().frequency + "</td><td>" + childSnapshot.val().firstTrain + '</td><td class="next-arrival">' + result[0] + '</td><td class="min-away">' + result[1] + "</td></tr>")
 
-  
-
-  
+});
 
 
-
-}); },1000);
 //Delete function
 function deleteMe(id) {
   database.ref().child(id).remove();
